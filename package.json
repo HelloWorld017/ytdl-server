@@ -1,0 +1,27 @@
+{
+  "name": "ytdl-server",
+  "version": "0.0.1",
+  "description": "A tiny server to download youtube videos.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HelloWorld017/ytdl-server.git"
+  },
+  "keywords": [
+    "youtube"
+  ],
+  "author": "Khinenw",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HelloWorld017/ytdl-server/issues"
+  },
+  "homepage": "https://github.com/HelloWorld017/ytdl-server#readme",
+  "dependencies": {
+    "fluent-ffmpeg": "^2.1.2",
+    "koa": "^2.3.0",
+    "ytdl-core": "^0.17.1"
+  }
+}
