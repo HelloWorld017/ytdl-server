@@ -6,7 +6,7 @@ const ytdl = require('ytdl-core');
 
 const app = new Koa();
 const config = require('./config.json');
-const port = process.env.PORT || '3000';
+const port = process.env.PORT || '8080';
 
 const mergeDownload = async (v) => {
 	const url = `https://youtube.com/watch?v=${v}`;
