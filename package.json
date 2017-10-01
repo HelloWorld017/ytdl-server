@@ -2,10 +2,10 @@
   "name": "ytdl-server",
   "version": "0.0.1",
   "description": "A tiny server to download youtube videos.",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app"
+    "start": "node server"
   },
   "engines": {
     "node": "8.5.0"
