@@ -54,6 +54,8 @@ app
 			return;
 		}
 
+		console.log(`Downloading ${ctx.query.v}`);
+
 		try {
 			const {title, stream} = await mergeDownload(ctx.query.v);
 			ctx.body = ctx.res.pipe(stream);
