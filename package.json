@@ -2,11 +2,14 @@
   "name": "ytdl-server",
   "version": "0.0.1",
   "description": "A tiny server to download youtube videos.",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app"
   },
-  "engines": {"node": "8.5.0"},
+  "engines": {
+    "node": "8.5.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HelloWorld017/ytdl-server.git"
