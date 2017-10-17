@@ -61,7 +61,7 @@ const downloadMusic = async (v) => {
 
 app
 	.use(async ctx => {
-		if(typeof ctx.query.key !== 'string' && ctx.query.key !== config.key) {
+		if(typeof ctx.query.key !== 'string' || !config.keys.includes(ctx.query.key)) {
 			ctx.body = 'Authorized only :(';
 			return;
 		}
