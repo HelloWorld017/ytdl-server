@@ -76,7 +76,7 @@ app
 		if(!usage[key]) usage[key] = {count: 1, date: Date.now()};
 
 		if(config.permission && config.permission[key]) {
-			if(usage[key] > config.permission[key].max) {
+			if(usage[key].count > config.permission[key].max) {
 				ctx.body = "Exceeded :(";
 				return;
 			}
