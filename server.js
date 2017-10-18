@@ -80,6 +80,8 @@ app
 				ctx.body = "Exceeded :(";
 				return;
 			}
+
+			usage[key].count++;
 		}
 
 		if(typeof ctx.query.v !== 'string') {
