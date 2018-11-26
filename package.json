@@ -26,6 +26,6 @@
   "dependencies": {
     "fluent-ffmpeg": "^2.1.2",
     "koa": "^2.3.0",
-    "ytdl-core": "^0.17.1"
+    "ytdl-core": "^0.21.1"
   }
 }
