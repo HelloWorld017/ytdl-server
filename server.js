@@ -1,7 +1,7 @@
 const Koa = require('koa');
 const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
-const {inspect, promisify} = require('util');
+const {inspect} = require('util');
 const path = require('path');
 const ytdl = require('ytdl-core');
 
@@ -48,8 +48,6 @@ const downloadVideo = async (v) => {
 			format: findAffordableAudio(formats)
 		}).pipe(fs.createWriteStream(audioPath)).on('finish', resolve);
 	});
-	
-	console.log("Audio finished");
 
 	const stream = ffmpeg()
 			.input(ytdl(url, {
@@ -60,10 +58,6 @@ const downloadVideo = async (v) => {
 			.audioCodec('aac')
 			.on('error', (err, stdout, stderr) => {
 				console.error('Oops', err, stdout, stderr);
-			}).on('progress', progress => {
-				process.stdout.cursorTo(0);
-				process.stdout.clearLine(1);
-				process.stdout.write(progress.timemark);
 			})
 			.on('end', () => fs.unlink(audioPath, (err) => {
 				if(err) console.error(err);
@@ -94,43 +88,6 @@ const downloadMusic = async (v) => {
 	return {title, stream};
 };
 
-const downloadInfoPath = path.join(__dirname, 'downloads', 'downloads.json');
-const downloadQueue = [];
-const downloadDaemon = async () => {
-	if(downloadQueue.length === 0) {
-		setTimeout(downloadDaemon, 3000);
-		return;
-	}
-	
-	const {type, v: videoId} = downloadQueue.pop();
-	
-	const downloads = JSON.parse(await promisify(fs.readFile)(downloadInfoPath, 'utf8'));
-	if (downloads.includes(videoId)) return;
-	
-	downloads.push(videoId);
-	await promisify(fs.writeFile)(downloadInfoPath, JSON.stringify(downloads))
-	
-	let title, stream;
-	
-	if (type === 'video') {
-		({title, stream} = await downloadVideo(videoId));
-	} else {
-		({title, stream} = await downloadMusic(videoId));
-	}
-	
-	await new Promise(resolve => {
-		stream.pipe(fs.createWriteStream(
-			path.join(__dirname, 'downloads', sanitizeTo_(`${title}.mp4`))
-		)).on('finish', () => {
-			resolve();
-		});
-	});
-	
-	setTimeout(downloadDaemon);
-};
-
-downloadDaemon();
-
 app
 	.use(async ctx => {
 		if(typeof ctx.query.key !== 'string' && ctx.query.key !== config.key) {
@@ -145,15 +102,21 @@ app
 
 		try {
 			let title, stream;
-			downloadQueue.push({
-				v: ctx.query.v,
-				type: ctx.query.type || 'video'
-			});
-
-			ctx.body = 'Done!';
+			
+			if(typeof ctx.query.type === 'string' && ctx.query.type === 'music') {
+				({title, stream} = await downloadMusic(ctx.query.v));
+				ctx.type = 'audio/mpeg';
+				ctx.attachment(sanitizeTo_(`${title}.mp3`));
+			} else {
+				({title, stream} = await downloadVideo(ctx.query.v));
+				ctx.type = 'video/mpeg';
+				ctx.attachment(sanitizeTo_(`${title}.mp4`));
+			}
+	
+			ctx.body = stream;
 		} catch(err) {
-			ctx.body = `<h1>Oops!</h1><pre>${inspect(err)}</pre>`;
 			ctx.type = 'text/html';
+			ctx.body = `<h1>Oops!</h1><pre>${inspect(err)}</pre>`;
 		}
 	})
 	.listen(port, () => console.log(`Listening on port ${port}`));
