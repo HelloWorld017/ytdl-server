@@ -88,11 +88,29 @@ const downloadMusic = async (v) => {
 	return {title, stream};
 };
 
+const usage = [];
+
 app
 	.use(async ctx => {
-		if(typeof ctx.query.key !== 'string' && ctx.query.key !== config.key) {
+		const key = ctx.query.key;
+
+		if(typeof key !== 'string' || !config.key.includes(key)) {
 			ctx.body = 'Authorized only :(';
 			return;
+		}
+
+		if(usage[key] && usage[key].date + 3600*24*1000 < Date.now()) 
+			usage[key] = undefined;
+		
+		if(!usage[key]) usage[key] = {count: 1, date: Date.now()};
+
+		if(config.permission && config.permission[key]) {
+			if(usage[key].count > config.permission[key].max) {
+				ctx.body = "Exceeded :(";
+				return;
+			}
+
+			usage[key].count++;
 		}
 
 		if(typeof ctx.query.v !== 'string') {
