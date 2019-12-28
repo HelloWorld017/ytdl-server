@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Downloader
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Download videos on youtube
 // @author       Khinenw
 // @include      http://www.youtube.com/*
@@ -18,7 +18,7 @@
 (function() {
 	'use strict';
 	//const YTDL_SERVER_URL = `http://khinenw.azurewebsites.net/server.js?key=PASSWORD_HERE&v=`;
-	const YTDL_SERVER_URL = `http://localhost/?key=nenwnenw&v=`;
+	const YTDL_SERVER_URL = `http://localhost:1337/?key=nenwnenw&v=`;
 
 	class Icons {
 		static get download() {
@@ -47,7 +47,6 @@
 		let parent = $('#menu-container #top-level-buttons');
 
 		if(!parent) {
-			console.error("No Youtube T_T");
 			setTimeout(findAndInject, 2000);
 			return;
 		}
@@ -64,68 +63,98 @@
 		};
 
 		const getVideoId = () => {
-			return location.href.match(/\?v=([a-zA-Z0-9-_]+)/)[1];
+			return location.href.match(/v=([a-zA-Z0-9-_]+)/)[1];
 		};
-		
+
+		const applyStyle = (elem, style) => {
+			Object.keys(style).forEach(key => {
+				elem.style[key] = style[key];
+			});
+		};
+
 		const createButton = (width, svg, text) => {
+			const renderer = document.createElement('div');
+
 			const button = document.createElement('button');
-            button.innerHTML = `${Icons.svg(svg)}${text}`;
-			button.setAttribute('is', 'paper-icon-button-light');
+			button.innerHTML = `${Icons.svg(svg)}${text}`;
+			renderer.appendChild(button);
 
-			button.style.height = '24px';
-			button.style.color = 'var(--yt-icon-color)';
-			button.style.boxSizing = 'content-box';
-			button.style.whiteSpace = 'nowrap';
-			button.style.overflow = 'hidden';
-			button.style.transition = 'all .4s ease';
-			button.style.display = 'flex';
-			button.querySelector('path').style.fill = 'var(--yt-icon-color)';
-			button.querySelector('svg').style.marginRight = '3px';
+			const pathElem = button.querySelector('path');
+			const svgElem = button.querySelector('svg');
 
-			button.addEventListener('mouseover', () => {
-				button.querySelector('path').style.fill = 'var(--yt-hovered-text-color)';
-				button.style.fill = 'var(--yt-hovered-text-color)';
+			applyStyle(renderer, {
+				color: 'var(--yt-icon-color, rgba(17, 17, 17, .4))',
+
+				display: 'flex',
+    			alignItems: 'flex-start',
+    			justifyContent: 'center',
+				whiteSpace: 'nowrap',
+				overflow: 'hidden',
+				transition: 'all .4s ease'
 			});
 
-			button.addEventListener('mouseout', () => {
-				button.querySelector('path').style.fill = 'var(--yt-icon-color)';
-				button.style.fill = 'var(--yt-icon-color)';
+			applyStyle(button, {
+				background: 'transparent',
+				border: 'none',
+				outline: 'none',
+				cursor: 'pointer',
+
+				display: 'flex',
+				alignItems: 'center'
 			});
 
-			button.showButton = () => {
-				button.style.width = width;
-				button.style.padding = '8px';
+			applyStyle(pathElem, {
+				transition: 'all .4s ease',
+				fill: 'var(--yt-icon-color, rgba(17, 17, 17, .4))'
+			});
+
+			applyStyle(svgElem, {
+				height: 'var(--yt-button-icon-size, 36px)',
+				marginRight: '3px'
+			});
+
+			renderer.addEventListener('mouseover', () => {
+				renderer.querySelector('path').style.fill = 'var(--yt-hovered-text-color, rgba(17, 17, 17, .8))';
+                renderer.style.color = 'var(--yt-hovered-text-color, rgba(17, 17, 17, .8))';
+			});
+
+			renderer.addEventListener('mouseout', () => {
+				renderer.querySelector('path').style.fill = 'var(--yt-icon-color, rgba(17, 17, 17, .4))';
+                renderer.style.color = 'var(--yt-icon-color, rgba(17, 17, 17, .4))';
+			});
+
+			renderer.showButton = () => {
+				renderer.style.width = width;
 			};
 
-			button.hideButton = () => {
-				button.style.width = '0';
-				button.style.padding = '8px 0';
+			renderer.hideButton = () => {
+				renderer.style.width = '0';
 			};
-			
-			button.inject = () => {
-				parent.appendChild(button);
-			};
-			
-			button.inject();
 
-			return button;
+			renderer.inject = () => {
+				parent.appendChild(renderer);
+			};
+
+			renderer.inject();
+
+			return renderer;
 		};
 
-		const videoButton = createButton('4rem', 'video', 'mp4');
+		const videoButton = createButton('5rem', 'video', 'mp4');
 		videoButton.hideButton();
 		videoButton.addEventListener('click', () => {
 			openInNewTab(`${YTDL_SERVER_URL}${getVideoId()}`);
 			return;
 		});
 
-		const musicButton = createButton('4rem', 'music', 'mp3');
+		const musicButton = createButton('5rem', 'music', 'mp3');
 		musicButton.hideButton();
 		musicButton.addEventListener('click', () => {
 			openInNewTab(`${YTDL_SERVER_URL}${getVideoId()}&type=music`);
 			return;
 		});
 
-		const downloadButton = createButton('7rem', 'download', '다운로드');
+		const downloadButton = createButton('10rem', 'download', '다운로드');
 		downloadButton.id = 'dlbutton';
 		downloadButton.hideButton();
 		downloadButton.addEventListener('click', () => {
@@ -133,18 +162,18 @@
 			videoButton.showButton();
 			musicButton.showButton();
 		});
-		
+
 		const checkInject = () => {
 			const _parent = $('#menu-container #top-level-buttons');
 			if(!_parent || _parent.querySelector('#dlbutton')) {
 				setTimeout(checkInject, 2000);
 				return;
 			}
-			
+
 			parent = _parent;
-			
+
 			readyParent();
-			
+
 			downloadButton.inject();
 			downloadButton.hideButton();
 			setTimeout(() => downloadButton.showButton(), 1000);
@@ -152,15 +181,12 @@
 			videoButton.hideButton();
 			musicButton.inject();
 			musicButton.hideButton();
-			
-			console.log("Injected on new Page!");
+
 			setTimeout(checkInject, 2000);
 		};
-		
+
 		checkInject();
-		
-		console.log("Injected");
-		
+
 		setTimeout(() => downloadButton.showButton(), 1000);
 	};
 
